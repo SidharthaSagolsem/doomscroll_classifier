@@ -1,0 +1,9 @@
+id,action,new_label,new_reasoning,group_with,note
+19e2214a83,keep,,,,"Row 4: 'lasagna in the kitchen sink' cooking video. Kept as ragebait: disgust/outrage-bait cooking is a known ragebait genre, but it is borderline with brainrot."
+754b78e6c8,keep,,,8ec686fdc4,"Rows 14 & 90: same 'iPads at restaurants = bad parent' take, paraphrased. Forced into one split group."
+9adc6a659c,keep,,,1220925a7b,"Rows 20, 30 & 98: same 'gentle parenting raises monsters' take. Forced into one split group."
+cb10f2c0a5,keep,,,1220925a7b,"Rows 20, 30 & 98: see above."
+a243cb280b,keep,,,3064fab9ec,"Rows 34 & 94: same 'stay-at-home wife doesn't work' take. Forced into one split group."
+366387c762,keep,,,,"Row 59: 'ONLY 1% CAN DO THIS' engagement bait. Kept as brainrot (no outrage, no info), borderline."
+8a96b438ec,keep,,,,"Row 75: ASMR clip that pivots into a 'the matrix is real' conspiracy. Mixed signals; kept as brainrot."
+82071d83dc,keep,,,,"Row 125: SQL task-manager template with step-by-step instructions. Kept as educational though it reads partly like self-promotion."

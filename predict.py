@@ -33,6 +33,15 @@ def is_adapter(model_path: str) -> bool:
         return False
 
 
+def _hub_repo_exists(repo_id: str) -> bool:
+    try:
+        from huggingface_hub import repo_exists
+
+        return repo_exists(repo_id)
+    except Exception:  # noqa: BLE001 - offline: let from_pretrained report the real error
+        return True
+
+
 def load_classifier(model_path: str, load_in_4bit: bool | None = None):
     """Return (model, tokenizer). Adapters load their base model automatically."""
     import torch
@@ -41,13 +50,20 @@ def load_classifier(model_path: str, load_in_4bit: bool | None = None):
     cuda = torch.cuda.is_available()
     if load_in_4bit is None:
         load_in_4bit = cuda
-    dtype = (torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16) if cuda else torch.float32
+    # Native bf16 needs compute capability >= 8.0; a T4 (7.5) uses fp16.
+    native_bf16 = cuda and torch.cuda.get_device_capability()[0] >= 8
+    dtype = (torch.bfloat16 if native_bf16 else torch.float16) if cuda else torch.float32
     kwargs = {"dtype": dtype, "device_map": "auto" if cuda else None}
     if load_in_4bit:
         kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=dtype, bnb_4bit_use_double_quant=True
         )
 
+    if not Path(model_path).exists() and not _hub_repo_exists(model_path):
+        raise SystemExit(
+            f"Model not found: {model_path!r} is neither a local folder nor a Hugging Face repo. "
+            "If it's outputs/lora, training probably failed: check the train.py output."
+        )
     if is_adapter(model_path):
         from peft import AutoPeftModelForCausalLM
 

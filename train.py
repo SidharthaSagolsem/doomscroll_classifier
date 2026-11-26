@@ -77,7 +77,9 @@ def main(argv: list[str] | None = None) -> None:
 
     cuda = torch.cuda.is_available()
     use_4bit = cuda and not args.no_4bit
-    bf16 = cuda and torch.cuda.is_bf16_supported()  # T4: False -> fp16
+    # Native bf16 needs compute capability >= 8.0 (A100, L4, ...). Don't use
+    # torch.cuda.is_bf16_supported(): it also counts slow emulation, so it says True on a T4.
+    bf16 = cuda and torch.cuda.get_device_capability()[0] >= 8  # T4 (7.5) -> fp16
     compute_dtype = torch.bfloat16 if bf16 else torch.float16
     print(f"cuda={cuda} 4bit={use_4bit} dtype={compute_dtype if cuda else torch.float32}")
 
@@ -141,6 +143,8 @@ def main(argv: list[str] | None = None) -> None:
         peft_config=peft_config,
         quantization_config=quant,
     )
+    if cuda and not bf16:
+        make_pre_ampere_safe(trainer.model)
     trainer.model.print_trainable_parameters()
 
     result = trainer.train()
@@ -166,6 +170,36 @@ def main(argv: list[str] | None = None) -> None:
                                   commit_message="Upload doomscroll LoRA adapter")
         tokenizer.push_to_hub(args.hub_repo, private=args.private)
         print(f"pushed to https://huggingface.co/{args.hub_repo}")
+
+
+def make_pre_ampere_safe(model) -> None:
+    """Fix QLoRA training on GPUs without bf16 support (e.g. Colab's T4, compute capability 7.5).
+
+    TRL >= 1.x converts the trainable LoRA weights of a 4-bit model to bf16, and its
+    fused loss kernel then runs bf16 matmuls with fp32 output, which only exist on
+    compute capability >= 8.0 (A100, L4, ...). On a T4 that fails in the first
+    backward pass with "gemm input type at::BFloat16 and output type float is only
+    supported for CUDA devices with compute capability 8.0 or higher".
+
+    Fix: keep the LoRA weights in fp32 (fp16 mixed precision still does the heavy
+    math in fp16), and make the loss kernel upcast to fp32 itself instead of asking
+    the GPU for the unsupported mixed-dtype matmul.
+    """
+    import torch
+
+    n = 0
+    for param in model.parameters():
+        if param.requires_grad and param.dtype == torch.bfloat16:
+            param.data = param.data.float()
+            n += 1
+    print(f"pre-Ampere GPU: moved {n} trainable tensors from bf16 to fp32")
+    try:
+        import trl.kernels.chunked_logprob as chunked_logprob
+
+        if hasattr(chunked_logprob, "_MM_OUT_DTYPE"):
+            chunked_logprob._MM_OUT_DTYPE = False  # use the plain fp32 matmul fallback
+    except ImportError:
+        pass
 
 
 def _hf_logged_in() -> bool:

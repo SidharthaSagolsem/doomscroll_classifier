@@ -10,17 +10,28 @@ Labels: `high-dopamine ragebait` · `brainrot/low-attention` · `neutral` · `ed
 
 The training data is synthetic, generated with the Gemini API.
 
-**Model:** _not published yet. A link to the Hugging Face adapter goes here after training._
+**Model:** [SidharthaSgl/doomscroll-qwen2.5-1.5b-lora](https://huggingface.co/SidharthaSgl/doomscroll-qwen2.5-1.5b-lora) (LoRA adapter for `Qwen/Qwen2.5-1.5B-Instruct`)
+
+```powershell
+python predict.py --model SidharthaSgl/doomscroll-qwen2.5-1.5b-lora --text "POV: the rizzler at 3am fr fr"
+```
 
 ## Results
 
-Held-out synthetic test set (about 23 posts, near-duplicates kept out of train). Macro-F1 with 95% bootstrap CI.
+Held-out synthetic test set: 23 posts, with near-duplicates kept out of train. Macro-F1 and accuracy have 95% bootstrap CIs (1000 resamples). Run of 2026-11-26 on a Colab T4: 3 epochs, LoRA r=16, about 2 minutes of training.
 
-| System | Macro-F1 | 95% CI | Accuracy | Valid JSON |
-|---|---|---|---|---|
-| Fine-tuned (QLoRA) | _tbd_ | _tbd_ | _tbd_ | _tbd_ |
-| Zero-shot Qwen2.5-1.5B-Instruct | _tbd_ | _tbd_ | _tbd_ | _tbd_ |
-| TF-IDF + logistic regression | _tbd_ | _tbd_ | _tbd_ | n/a |
+| System | Macro-F1 | 95% CI | Accuracy | 95% CI | Valid JSON |
+|---|---|---|---|---|---|
+| **Fine-tuned (QLoRA)** | **0.923** | 0.775–1.000 | **0.913** | 0.783–1.000 | **100%** |
+| Zero-shot Qwen2.5-1.5B-Instruct | 0.616 | 0.458–0.714 | 0.652 | 0.478–0.826 | 91.3% |
+| TF-IDF + logistic regression | 0.908 | 0.726–1.000 | 0.913 | 0.783–1.000 | n/a |
+
+TF-IDF 5-fold group cross-validation on train+val: macro-F1 0.925 ± 0.014.
+
+What this shows:
+- **Fine-tuning works.** The model beats its own zero-shot version by a clear margin (the CIs don't overlap). The biggest gain is brainrot: zero-shot F1 0.00 → fine-tuned 0.86. Every output is valid JSON, unlike v0's `Post Post Post...`.
+- **It doesn't (yet) beat TF-IDF.** 0.923 vs 0.908 is well inside the noise of a 23-post test set. The synthetic posts are easy to separate by surface words, so a cheap baseline already does well.
+- **Remaining errors:** 2 of 7 ragebait posts were called brainrot (the "lasagna in the sink" post flagged as borderline in the data audit, and a tipping-culture rant).
 
 With a test set this small, differences inside the confidence intervals aren't meaningful. See [docs/data_audit.md](docs/data_audit.md) for the data's limits, and [data/real_test/](data/real_test/README.md) for the real-post test set in progress.
 

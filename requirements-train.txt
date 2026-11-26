@@ -1,0 +1,10 @@
+# Colab GPU (T4) training + evaluation. torch is preinstalled on Colab, so it isn't pinned here.
+transformers==5.24.1
+trl==1.19.0
+peft==0.22.0
+bitsandbytes==0.50.2
+accelerate==1.16.0
+datasets==5.2.0
+huggingface_hub
+scikit-learn>=1.6
+numpy>=2.0

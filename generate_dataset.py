@@ -10,8 +10,8 @@ Studio free tier.
 
 Usage:
     export GEMINI_API_KEY="AIza..."      # from aistudio.google.com/apikey
-    pip install google-genai pydantic tenacity
-    python generate_dataset_gemini.py --num-batches 50
+    pip install -r requirements.txt
+    python generate_dataset.py --num-batches 50
 
 Each batch request generates 10 diverse examples (one API call = 10 rows),
 and every example is flushed to disk the moment it's validated, so a

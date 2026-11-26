@@ -38,3 +38,17 @@ ENV/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Generated data, training outputs, model weights
+data/processed/
+outputs/
+results/
+results.zip
+*.safetensors
+*.bin
+*.pt
+*.gguf
+
+# Real test set posts (keep the guide + template, not the collected data)
+data/real_test/*.csv
+!data/real_test/template.csv

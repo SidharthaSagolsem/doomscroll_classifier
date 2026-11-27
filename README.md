@@ -18,6 +18,25 @@ python predict.py --model SidharthaSgl/doomscroll-qwen2.5-1.5b-lora --text "POV:
 
 ## Results
 
+### Real posts (the number that matters)
+
+249 real YouTube comments and Shorts/video titles from 2020–2025, taken from [AmaanP314/youtube-comment-sentiment](https://huggingface.co/datasets/AmaanP314/youtube-comment-sentiment) (CC-BY-SA-4.0) and labelled by hand. None were seen in training. Same adapter as below; evaluated 2026-11-27.
+
+| System | Macro-F1 | 95% CI | Accuracy | 95% CI | Valid JSON |
+|---|---|---|---|---|---|
+| **Fine-tuned (QLoRA)** | **0.737** | 0.675–0.791 | **0.743** | 0.687–0.799 | **100%** |
+| Zero-shot Qwen2.5-1.5B-Instruct | 0.416 | 0.356–0.474 | 0.486 | 0.426–0.546 | 99.2% |
+| TF-IDF + logistic regression | 0.527 | 0.467–0.582 | 0.538 | 0.478–0.594 | n/a |
+
+Labels: Claude labelled all 249 posts. A human independently re-labelled 87 of them, with 74% raw agreement and Cohen's κ 0.64 ("substantial"). The disagreements were resolved with the rules in [data/real_test/README.md](data/real_test/README.md). On just those 87 human-checked posts the ranking is the same: fine-tuned 0.718 (CI 0.608–0.812), TF-IDF 0.518, zero-shot 0.443.
+
+What this shows:
+- **Fine-tuning generalises; keyword matching doesn't.** TF-IDF falls from 0.91 on synthetic posts to 0.53 on real ones. The fine-tuned model falls less (0.92 → 0.74) and now clearly beats TF-IDF (the CIs don't overlap).
+- **Best at ragebait (F1 0.82) and brainrot (0.80).** Zero-shot Qwen calls 44 of 58 brainrot posts "ragebait", and fine-tuning fixes that.
+- **Weakest at neutral (0.66) and educational (0.67).** The model treats posts *about* learning ("great explanation, thanks!") as educational, and short how-to tips ("you can't log out on a phone, remove the Google account instead") as brainrot. More real-style neutral and educational training examples are the next fix.
+
+### Synthetic test set
+
 Held-out synthetic test set: 23 posts, with near-duplicates kept out of train. Macro-F1 and accuracy have 95% bootstrap CIs (1000 resamples). Run of 2026-11-26 on a Colab T4: 3 epochs, LoRA r=16, about 2 minutes of training.
 
 | System | Macro-F1 | 95% CI | Accuracy | 95% CI | Valid JSON |
@@ -33,7 +52,7 @@ What this shows:
 - **It doesn't (yet) beat TF-IDF.** 0.923 vs 0.908 is well inside the noise of a 23-post test set. The synthetic posts are easy to separate by surface words, so a cheap baseline already does well.
 - **Remaining errors:** 2 of 7 ragebait posts were called brainrot (the "lasagna in the sink" post flagged as borderline in the data audit, and a tipping-culture rant).
 
-With a test set this small, differences inside the confidence intervals aren't meaningful. See [docs/data_audit.md](docs/data_audit.md) for the data's limits, and [data/real_test/](data/real_test/README.md) for the real-post test set in progress.
+With a test set this small, differences inside the confidence intervals aren't meaningful. See [docs/data_audit.md](docs/data_audit.md) for the data's limits.
 
 ## Pipeline
 

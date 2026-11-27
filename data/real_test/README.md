@@ -55,7 +55,7 @@ Tricky cases:
 4. Resolve the disagreements and fill `final_label`.
 5. Convert to JSONL and evaluate:
    ```powershell
-   python -c "import csv,json; rows=[r for r in csv.DictReader(open('data/real_test/labels.csv',encoding='utf-8')) if r['final_label']]; open('data/real_test/real_test.jsonl','w',encoding='utf-8').write(''.join(json.dumps({'id':r['id'],'input_text':r['text'],'label':r['final_label']})+'\n' for r in rows))"
+   python -c "import csv,json; rows=[r for r in csv.DictReader(open('data/real_test/labels.csv',encoding='utf-8-sig')) if r['final_label']]; open('data/real_test/real_test.jsonl','w',encoding='utf-8').write(''.join(json.dumps({'id':r['id'],'input_text':r['text'],'label':r['final_label']})+'\n' for r in rows))"
    ```
    Then on Colab:
    ```

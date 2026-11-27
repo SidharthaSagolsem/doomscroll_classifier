@@ -46,7 +46,7 @@ def main() -> None:
     p.add_argument("--disagreements", type=Path, help="write rows where A and B differ to this CSV")
     args = p.parse_args()
 
-    with args.csv.open(encoding="utf-8", newline="") as f:
+    with args.csv.open(encoding="utf-8-sig", newline="") as f:  # -sig: Excel adds a BOM
         rows = list(csv.DictReader(f))
     rep = agreement_report(rows, args.a, args.b)
 

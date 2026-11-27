@@ -205,6 +205,9 @@ def test_cohen_kappa_known_values():
     rows = [{"label_a": x, "label_b": y} for x, y in zip(a, [RAGE, RAGE, BRAIN, NEUTRAL])]
     rep = agreement_report(rows, "label_a", "label_b")
     assert rep["raw_agreement"] == 0.75
+    # annotators may type one-letter shortcuts (r/b/n/e)
+    short = [{"label_a": RAGE, "label_b": "r"}, {"label_a": BRAIN, "label_b": " B "}, {"label_a": EDU, "label_b": "n"}]
+    assert agreement_report(short, "label_a", "label_b")["raw_agreement"] == pytest.approx(2 / 3)
 
 
 # ----------------------------- baseline / report / notebook -----------------

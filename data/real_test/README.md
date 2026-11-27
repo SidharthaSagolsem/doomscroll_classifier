@@ -22,7 +22,7 @@ Copy `template.csv` to `labels.csv` (git-ignored, so the posts stay on your mach
 | `collected` | date, YYYY-MM-DD |
 | `text` | the post text (anonymised) |
 | `label_a` | your label |
-| `label_b` | a second person's label, done **without seeing** `label_a` |
+| `label_b` | a second person's label, done **without seeing** `label_a`. Shortcuts r / b / n / e are fine |
 | `final_label` | the agreed label after discussing disagreements |
 | `notes` | anything ambiguous |
 
@@ -61,3 +61,8 @@ Tricky cases:
    ```
    python evaluate.py --model <user>/doomscroll-qwen2.5-1.5b-lora --test data/real_test/real_test.jsonl --out-dir results_real
    ```
+
+## Decisions made while labelling (2026-11-27)
+
+- Praise for a tutorial, questions about code, and news headlines are **neutral**, even when the topic is learning. Only a post that itself explains something is educational.
+- Meme-y political outrage ("Go woke go broke", "EMERGENCY ALERT! … NUCLEAR BOMBSHELL") is **ragebait**, not brainrot. Brainrot is content-free slang and noise.

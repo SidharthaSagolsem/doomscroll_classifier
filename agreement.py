@@ -19,8 +19,18 @@ from doomscroll.metrics import cohen_kappa
 from doomscroll.schema import LABELS
 
 
+# One-letter shortcuts annotators can type instead of the full label.
+SHORTCUTS = {"r": LABELS[0], "b": LABELS[1], "n": LABELS[2], "e": LABELS[3]}
+
+
+def normalize_label(value: str) -> str:
+    value = (value or "").strip()
+    return SHORTCUTS.get(value.lower(), value)
+
+
 def agreement_report(rows: list[dict], col_a: str, col_b: str) -> dict:
-    pairs = [(r[col_a].strip(), r[col_b].strip()) for r in rows if r.get(col_a, "").strip() and r.get(col_b, "").strip()]
+    pairs = [(normalize_label(r.get(col_a)), normalize_label(r.get(col_b))) for r in rows]
+    pairs = [(x, y) for x, y in pairs if x and y]
     bad = sorted({x for pair in pairs for x in pair if x not in LABELS})
     if bad:
         raise ValueError(f"unknown labels in CSV: {bad}")
@@ -57,8 +67,8 @@ def main() -> None:
         print(f"  {count:>3}  A|B = {pair}")
 
     if args.disagreements:
-        diff = [r for r in rows if r.get(args.a, "").strip() and r.get(args.b, "").strip()
-                and r[args.a].strip() != r[args.b].strip()]
+        diff = [r for r in rows if normalize_label(r.get(args.a)) and normalize_label(r.get(args.b))
+                and normalize_label(r[args.a]) != normalize_label(r[args.b])]
         with args.disagreements.open("w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
             writer.writeheader()

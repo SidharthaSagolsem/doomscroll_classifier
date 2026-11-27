@@ -51,4 +51,5 @@ results.zip
 
 # Real test set posts (keep the guide + template, not the collected data)
 data/real_test/*.csv
+data/real_test/*.jsonl
 !data/real_test/template.csv

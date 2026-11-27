@@ -42,7 +42,7 @@ Thumbs.db
 # Generated data, training outputs, model weights
 data/processed/
 outputs/
-results/
+results*/
 results.zip
 *.safetensors
 *.bin
